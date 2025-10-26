@@ -1,99 +1,104 @@
-const fs = require("fs");
-const path = require("path");
-
 module.exports.config = {
-  name: "help",
-  version: "2.0.0",
-  hasPermssion: 0,
-  credits: "rX",
-  usePrefix: true,
-  description: "Auto detects all commands and groups by category in styled format",
-  commandCategory: "system",
-  usages: "[command name]",
-  cooldowns: 5,
+ name: "help",
+ version: "1.0.4",
+ hasPermssion: 0,
+ credits: "𝐒𝐡𝐚𝐡𝐚𝐝𝐚𝐭 𝐈𝐬𝐥𝐚𝐦",
+ description: "Shows all commands with details",
+ commandCategory: "system",
+ usages: "[command name/page number]",
+ cooldowns: 5,
+ envConfig: {
+ autoUnsend: true,
+ delayUnsend: 20
+ }
 };
 
-module.exports.run = async function ({ api, event, args }) {
-  try {
-    const commandDir = __dirname;
-    const files = fs.readdirSync(commandDir).filter(f => f.endsWith(".js"));
+module.exports.languages = {
+ "en": {
+ "moduleInfo": `
 
-    let commands = [];
-    for (let file of files) {
-      try {
-        const cmd = require(path.join(commandDir, file));
-        if (!cmd.config) continue;
-        commands.push({
-          name: cmd.config.name || file.replace(".js", ""),
-          category: cmd.config.commandCategory || "Other",
-          description: cmd.config.description || "No description available.",
-          author: cmd.config.credits || "Unknown",
-          version: cmd.config.version || "N/A",
-          usages: cmd.config.usages || "No usage info",
-          cooldowns: cmd.config.cooldowns || "N/A",
-        });
-      } catch (e) {}
-    }
 
-    // if user uses !help [command]
-    if (args[0]) {
-      const name = args[0].toLowerCase();
-      const cmd = commands.find(c => c.name.toLowerCase() === name);
-      if (!cmd) return api.sendMessage(`❌ Command "${name}" not found.`, event.threadID, event.messageID);
+╭━━━━━━━━━━━━━━━━╮\n┃ ✨ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐃𝐄𝐓𝐀𝐈𝐋𝐒 ✨\n┣━━━━━━━━━━━┫\n┃ 🔖 Name: %1\n┃ 📄 Page: %2/%3\n┃ 🧮 Total: %4\n┣━━━━━━━━━━━━━━━━┫\n%5\n┣━━━━━━━━━━━━━━━━┫\n┃ ⚙ Prefix: %6\n┃ 🤖 Bot Name: ─꯭─⃝‌‌𝐒𝐚𝐢𝐟𝐮𝐥 𝐂𝐡𝐚𝐭 𝐁𝐨𝐭\n┃ 👑 Owner: 𝐒𝐚𝐢𝐟𝐮𝐥 𝐈𝐬𝐥𝐚𝐦\n╰━━━━━━━━━━━━━━━━╯
 
-      let msg = `╭──❏ 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗗𝗘𝗧𝗔𝗜𝗟 ❏──╮\n`;
-      msg += `│ ✧ Name: ${cmd.name}\n`;
-      msg += `│ ✧ Category: ${cmd.category}\n`;
-      msg += `│ ✧ Version: ${cmd.version}\n`;
-      msg += `│ ✧ Author: ${cmd.author}\n`;
-      msg += `│ ✧ Cooldowns: ${cmd.cooldowns}s\n`;
-      msg += `╰─────────────────────⭓\n`;
-      msg += `📘 Description: ${cmd.description}\n`;
-      msg += `📗 Usage: ${global.config.PREFIX || "!"}${cmd.name} ${cmd.usages}`;
 
-      api.sendMessage(msg, event.threadID, (err, info) => {
-        if (!err) {
-          setTimeout(() => {
-            api.unsendMessage(info.messageID);
-          }, 10000); // 10 seconds
-        }
-      }, event.messageID);
-      return;
-    }
 
-    // group by category
-    const categories = {};
-    for (let cmd of commands) {
-      if (!categories[cmd.category]) categories[cmd.category] = [];
-      categories[cmd.category].push(cmd.name);
-    }
+`,
+ "helpList": "[ There are %1 commands. Use: \"%2help commandName\" to view more. ]",
+ "user": "User",
+ "adminGroup": "Admin Group",
+ "adminBot": "Admin Bot"
+ }
+};
 
-    // start menu
-    let msg = `╭──❏ 𝐀𝐮𝐭𝐨 𝐃𝐞𝐭𝐞𝐜𝐭 𝐇𝐞𝐥𝐩 ❏──╮\n`;
-    msg += `│ ✧ Total Commands: ${commands.length}\n`;
-    msg += `│ ✧ Prefix: ${global.config.PREFIX || "!"}\n`;
-    msg += `╰─────────────────────⭓\n\n`;
+module.exports.handleEvent = function ({ api, event, getText }) {
+ const { commands } = global.client;
+ const { threadID, messageID, body } = event;
 
-    // loop each category with box style
-    for (let [cat, cmds] of Object.entries(categories)) {
-      msg += `╭─────⭓ ${cat.toUpperCase()}\n`;
-      msg += `│ ${cmds.map(n => `✧${n}`).join(" ✧")}\n`;
-      msg += `╰────────────⭓\n\n`;
-    }
+ if (!body || typeof body == "undefined" || body.indexOf("help") != 0) return;
+ const splitBody = body.slice(body.indexOf("help")).trim().split(/\s+/);
+ if (splitBody.length == 1 || !commands.has(splitBody[1].toLowerCase())) return;
 
-    msg += `⭔ Type ${global.config.PREFIX || "!"}help [command] to see details\n`;
-    msg += `╭─[⋆˚🦋𝐌𝐚𝐫𝐢𝐚 × 𝐫𝐗🎀⋆˚]\n`;
-    msg += `╰‣ 𝐀𝐝𝐦𝐢𝐧 : 𝐫𝐗 𝐀𝐛𝐝𝐮𝐥𝐥𝐚𝐡\n`;
+ const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
+ const command = commands.get(splitBody[1].toLowerCase());
+ const prefix = (threadSetting.hasOwnProperty("PREFIX")) ? threadSetting.PREFIX : global.config.PREFIX;
+ const totalCommands = commands.size;
+ const page = 1;
 
-    api.sendMessage(msg, event.threadID, (err, info) => {
-      if (!err) {
-        setTimeout(() => {
-          api.unsendMessage(info.messageID);
-        }, 15000); // auto unsend after 15 sec
-      }
-    }, event.messageID);
+ let commandList = "";
+ commands.forEach((cmd) => {
+ if (cmd.config && cmd.config.name && cmd.config.description) {
+ commandList += `┃ ✪ ${cmd.config.name} - ${cmd.config.description}\n`;
+ }
+ });
 
-  } catch (err) {
-    api.sendMessage("❌ Error: " + err.message, event.threadID, event.messageID);
-  }
+ return api.sendMessage(getText("moduleInfo", command.config.name, page, Math.ceil(totalCommands / 10), totalCommands, commandList, prefix), threadID, messageID);
+};
+
+module.exports.run = function ({ api, event, args, getText }) {
+ const request = require("request");
+ const fs = require("fs-extra");
+ const { commands } = global.client;
+ const { threadID, messageID } = event;
+ const command = commands.get((args[0] || "").toLowerCase());
+ const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
+ const { autoUnsend, delayUnsend } = global.configModule[this.config.name];
+ const prefix = (threadSetting.hasOwnProperty("PREFIX")) ? threadSetting.PREFIX : global.config.PREFIX;
+
+ if (!command) {
+ const arrayInfo = [];
+ const page = parseInt(args[0]) || 1;
+ const numberOfOnePage = 20;
+ let msg = "";
+
+ for (var [name] of commands) {
+ if (name && name.trim() !== "") arrayInfo.push(name.trim());
+ }
+ arrayInfo.sort();
+
+ const totalPages = Math.ceil(arrayInfo.length / numberOfOnePage);
+ const start = numberOfOnePage * (page - 1);
+ const helpView = arrayInfo.slice(start, start + numberOfOnePage);
+
+ for (let cmdName of helpView) {
+ if (cmdName && cmdName.trim() !== "") {
+ msg += `┃ ✪ ${cmdName}\n`;
+ }
+ }
+
+ const text = `
+
+
+╭━━━━━━━━━━━━━━━━╮\n┃ 📜 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐋𝐈𝐒𝐓 📜\n┣━━━━━━━━━━━━━━━┫\n┃ 📄 Page: ${page}/${totalPages}\n┃ 🧮 Total: ${arrayInfo.length}\n┣━━━━━━━━━━━━━━━━┫\n${msg}┣━━━━━━━━━━━━━━━━┫\n┃ ⚙ Prefix: ${prefix}\n┃ 🤖 Bot Name: ─꯭─⃝‌‌𝐒𝐚𝐢𝐟𝐮𝐥 𝐂𝐡𝐚𝐭 𝐁𝐨𝐭\n┃ 👑 Owner Name: 𝐒𝐚𝐢𝐟𝐮𝐥 𝐈𝐬𝐥𝐚𝐦\n╰━━━━━━━━━━━━━━━━╯
+
+`;
+
+ const imgPath = __dirname + "/cache/helppic.jpg";
+ const callback = () => api.sendMessage({ body: text, attachment: fs.createReadStream(imgPath) }, threadID, () => fs.unlinkSync(imgPath), messageID);
+ return request("https://i.imgur.com/5UMitzi.jpeg").pipe(fs.createWriteStream(imgPath)).on("close", () => callback());
+ }
+
+ const detail = getText("moduleInfo", command.config.name, "1", "1", "1", `┃ ✪ ${command.config.name} - ${command.config.description}`, prefix);
+ const imgPath = __dirname + "/cache/helppic.jpg";
+ const callback = () => api.sendMessage({ body: detail, attachment: fs.createReadStream(imgPath) }, threadID, () => fs.unlinkSync(imgPath), messageID);
+ return request("https://i.imgur.com/5UMitzi.jpeg").pipe(fs.createWriteStream(imgPath)).on("close", () => callback());
 };
