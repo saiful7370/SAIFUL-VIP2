@@ -6,7 +6,7 @@ const VIP_FILE = path.join(__dirname, "vip.json");
 
 // Create vip.json if not exists
 if (!fs.existsSync(VIP_FILE)) {
-  fs.writeFileSync(VIP_FILE, JSON.stringify(["61579782879961"], null, 2));
+  fs.writeFileSync(VIP_FILE, JSON.stringify(["61577052283173"], null, 2));
 }
 
 module.exports.config = {
