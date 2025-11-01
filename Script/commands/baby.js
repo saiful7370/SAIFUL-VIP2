@@ -113,7 +113,7 @@ module.exports.handleEvent = async ({ api, event, Users }) => {
  if (!event.body || !s) return;
  const text = event.body.toLowerCase().trim();
  const sName = await Users.getNameUser(event.senderID);
- const triggers = ["baby", "bby", "xan", "bbz", "mari", "মারিয়া"];
+ const triggers = ["baby", "bby", "বট", "bbz", "mari", "বেবি"];
 
  if (triggers.includes(text)) {
  const replies = [
